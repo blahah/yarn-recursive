@@ -21,8 +21,8 @@ function yarn(directoryName) {
     command += ' ' + argv.opt;
 
   console.log(clc.blueBright('Current yarn path: ' + directoryName + '/package.json...'));
- 
-  shell.cd(directoryName);  
+
+  shell.cd(directoryName);
   let result = shell.exec(command);
 
   return {
@@ -38,10 +38,19 @@ function filterRoot(directoryName) {
 }
 
 if (require.main === module) {
-  let exitCode = packageJsonLocations(process.cwd())
+  let paths
+
+  // if user specifies an array of paths, use only those
+  if (argv._ && argv._.length) {
+    paths = argv._.map(p => path.resolve(p))
+  } else {
+    paths = packageJsonLocations(process.cwd())
+  }
+
+  let exitCode = paths
     .filter(argv.skipRoot ? filterRoot : filtered => filtered)
     .map(yarn)
-    .reduce((code, result) =>result.exitCode > code ? result.exitCode : code, 0);
+    .reduce((code, result) => result.exitCode > code ? result.exitCode : code, 0);
 
   console.log(clc.green('End of yarns'));
   process.exit(exitCode);
